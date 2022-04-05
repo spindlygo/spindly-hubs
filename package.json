@@ -1,6 +1,6 @@
 {
   "name": "spindly-hubs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Client-side JS hubs for spindly",
   "main": "index.js",
   "scripts": {

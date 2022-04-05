@@ -86,7 +86,7 @@ exports.ConnectHub = function ConnectHub(hubclass, hub_instance_id) {
             // console.log('got a subscriber');
             return () => {
                 // console.log("Cleaning up...");
-                delete hub.stores[storename];
+                // delete hub.stores[storename];
             }
         });
 
