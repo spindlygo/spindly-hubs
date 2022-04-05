@@ -1,6 +1,6 @@
 let { writable } = require('svelte/store');
 
-exports.ConnectHub = function ConnectHub(hubclass, hub_instance_id) {
+exports.ConnectHub = function ConnectHub(hubclass, hub_instance_id, preserve = false) {
     let hub = {};
 
     if (!hub_instance_id) {
@@ -26,7 +26,7 @@ exports.ConnectHub = function ConnectHub(hubclass, hub_instance_id) {
     function connectWS() {
         try {
             let socket = new WebSocket(wsurl);
-
+            
             socket.onopen = () => {
                 console.log("Connected to Hub instance " + hubclass + "/" + hub_instance_id);
 
@@ -78,15 +78,27 @@ exports.ConnectHub = function ConnectHub(hubclass, hub_instance_id) {
 
     connectWS();
 
+    let createdStoreCount = 0;
 
 
     return function SpindlyStore(storename, initialValue = null) {
+
+        createdStoreCount++;
+
+        let discard = () => {
+            createdStoreCount--;
+
+            if (!preserve) {
+                delete hub.stores[storename];
+            }
+
+        }
 
         const { subscribe, set, update } = writable(initialValue, () => {
             // console.log('got a subscriber');
             return () => {
                 // console.log("Cleaning up...");
-                // delete hub.stores[storename];
+                discard();
             }
         });
 
@@ -98,6 +110,7 @@ exports.ConnectHub = function ConnectHub(hubclass, hub_instance_id) {
             },
             update: update,
             _internal_set: set,
+            discard: discard,
         };
 
         hub.stores[storename] = store;
