@@ -1,6 +1,6 @@
 {
   "name": "spindly-hubs",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Client-side JS hubs for spindly",
   "main": "index.js",
   "scripts": {
@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/spindlygo/spindly-hubs/issues"
   },
-  "homepage": "https://github.com/spindlygo/spindly-hubs"
+  "homepage": "https://github.com/spindlygo/spindly-hubs",
+  "devDependencies": {
+    "svelte": "^3.47.0"
+  }
 }

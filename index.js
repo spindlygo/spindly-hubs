@@ -1,4 +1,4 @@
-let { writable } = require('svelte/store');
+let { writable, readable } = require('svelte/store');
 
 exports.ConnectHub = function ConnectHub(hubclass, hub_instance_id, preserve = false) {
     let hub = {};
@@ -26,7 +26,7 @@ exports.ConnectHub = function ConnectHub(hubclass, hub_instance_id, preserve = f
     function connectWS() {
         try {
             let socket = new WebSocket(wsurl);
-            
+
             socket.onopen = () => {
                 console.log("Connected to Hub instance " + hubclass + "/" + hub_instance_id);
 
@@ -45,7 +45,12 @@ exports.ConnectHub = function ConnectHub(hubclass, hub_instance_id, preserve = f
 
                 for (let store_name in data) {
                     if (data.hasOwnProperty(store_name)) {
-                        hub.stores[store_name]._internal_set(data[store_name]);
+                        const store = hub.stores[store_name];
+                        if (store && store._internal_set) {
+                            store._internal_set(data[store_name]);
+                        } else {
+                            delete hub.stores[store_name];
+                        }
                     }
                 }
 
@@ -118,3 +123,38 @@ exports.ConnectHub = function ConnectHub(hubclass, hub_instance_id, preserve = f
         return store;
     }
 }
+
+exports.IsHostAlive = readable(true, function start(set) {
+    const docLocation = document.location.toString()
+    const hostPingAddress = (docLocation.endsWith("/") ? (docLocation) : (docLocation + "/")) + `spindly/alive`
+
+    const interval = setInterval(() => {
+        // Ping the server every second
+
+        fetch(hostPingAddress, {
+            method: 'GET'
+        }).then(response => {
+            if (response.status !== 200) {
+                console.log('Host is not responding correctly. Status Code: ' +
+                    response.status);
+                set(false);
+                return;
+            }
+
+            console.log("Host is alive");
+            set(true);
+
+        }).catch(function (err) {
+            console.log('Host is malfunctioned', err);
+            set(false);
+
+        });
+
+
+
+    }, 1000);
+
+    return function stop() {
+        clearInterval(interval);
+    };
+});
